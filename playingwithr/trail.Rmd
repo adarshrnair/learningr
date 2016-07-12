@@ -1,0 +1,139 @@
+---
+title: "Untitled"
+author: "Bhishma"
+date: "July 12, 2016"
+output: word_document
+---
+
+
+```{r}
+tw_token = "446728348-5HZVSTuJohw7SmMdyUsHFAlEEt29ex1y3Ysez587"
+tw_token_secret = "DWLkZfAdj4dTrZQzEwV3BMl8ePjEPalJa8dQWjwZnbdJ1"
+tw_consumer_key = "WMfGLAtO1AGA13c4NFRNp0pHZ"
+tw_consumer_secret ="PMZnkAp9qVe30ZWNw0jzXJXQqiLC2QJLAxz9wpQ0cv7FzIrzac"
+```
+
+```{r}
+library(twitteR)
+setup_twitter_oauth(tw_consumer_key,tw_consumer_secret,tw_token,tw_token_secret)
+```
+
+```{r}
+rahul = searchTwitter("rahulgandhi", n=1000)
+modi=searchTwitter("modi",n=1000)
+```
+
+```{r}
+rahul = plyr::ldply(rahul, as.data.frame)
+modi=plyr::ldply(modi, as.data.frame)
+```
+
+```{r}
+##install.packages("RTextTools")
+library(RTextTools)
+```
+
+```{r}
+dtmr = create_matrix(rahul$text, stemWords = F)
+dtmm = create_matrix(modi$text, stemWords = F)
+```
+
+```{r}
+library(corpustools)
+```
+
+```{r}
+cmp = corpora.compare(dtmr, dtmm)
+```
+
+```{r}
+head(cmp)
+```
+```{r}
+cmp=arrange(cmp,-chi)
+```
+```{r}
+View(cmp)
+```
+
+```{r}
+library(corpustools)
+cmp = corpora.compare(dtmm, dtmr)
+cmp  = arrange(cmp, -chi)
+```
+
+```{r}
+View(cmp)
+```
+
+```{r}
+with(head(cmp, 100),
+     plotWords(x=log(over), words = term, wordfreq = chi, random.y = T))
+```
+
+```{r}
+newmatrix <- cmp[3:dim(cmp)[1],]
+```
+
+```{r}
+with(head(newmatrix, 100),
+     plotWords(x=log(over), words = term, wordfreq = chi, random.y = T))
+```
+
+```{r}
+cmp  = arrange(cmp, -chi)
+```
+
+```{r}
+View(newmatrix)
+```
+
+```{r}
+plot(x=cmp$term, y=cmp$over, type="l")
+```
+
+```{r}
+m = lda.fit(dtmm, K=10)
+terms(m,10)
+```
+
+```{r}
+r = lda.fit(dtmr, K=10)
+terms(r,10)
+```
+
+```{r}
+##install.packages("devtools")
+devtools::install_github("cpsievert/LDAvis")
+library(LDAvis)
+```
+
+```{r}
+json_modi=ldavis_json(m,dtmm)
+serVis(json_modi)
+```
+
+```{r}
+json_rahul=ldavis_json(r,dtmr)
+serVis(json_rahul)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

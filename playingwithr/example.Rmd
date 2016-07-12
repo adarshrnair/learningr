@@ -1,0 +1,79 @@
+---
+output: word_document
+---
+#Assignment  :: :: :: Adarsh :: Pouya :: Shruthy :: :: ::
+
+Question: TO compare to post about NarendraModi and Rahulgandhi
+
+tw_token = "446728348-5HZVSTuJohw7SmMdyUsHFAlEEt29ex1y3Ysez587"
+tw_token_secret = "DWLkZfAdj4dTrZQzEwV3BMl8ePjEPalJa8dQWjwZnbdJ1"
+tw_consumer_key = "WMfGLAtO1AGA13c4NFRNp0pHZ"
+tw_consumer_secret ="PMZnkAp9qVe30ZWNw0jzXJXQqiLC2QJLAxz9wpQ0cv7FzIrzac"
+library(twitteR)
+setup_twitter_oauth(tw_consumer_key,tw_consumer_secret,tw_token,tw_token_secret)
+
+rahul = searchTwitter("rahulgandhi", n=1000)
+
+modi=searchTwitter("modi",n=1000)
+
+rahul = plyr::ldply(rahul, as.data.frame)
+modi=plyr::ldply(modi, as.data.frame)
+
+install.packages("RTextTools")
+library(RTextTools)
+
+dtmr = create_matrix(rahul$text, stemWords = F)
+dtmm = create_matrix(modi$text, stemWords = F)
+
+library(corpustools)
+
+cmp = corpora.compare(dtmr, dtmm)
+head(cmp)
+cmp=arrange(cmp,-chi)
+head(cmp)
+View(cmp)
+
+library(corpustools)
+cmp = corpora.compare(dtmm, dtmr)
+cmp  = arrange(cmp, -chi)
+View(cmp)
+
+with(head(cmp, 100),
+     plotWords(x=log(over), words = term, wordfreq = chi, random.y = T))
+
+##```{r, echo=FALSE}
+##summary(cmp)
+##```
+##```{r, echo=FALSE}
+##plot(cmp)
+##```
+newmatrix <- cmp[3:dim(cmp)[1],]
+
+with(head(newmatrix, 100),
+     plotWords(x=log(over), words = term, wordfreq = chi, random.y = T))
+
+cmp  = arrange(cmp, -chi)
+View(newmatrix)
+
+plot(x=cmp$term, y=cmp$over, type="l")
+
+m = lda.fit(dtmm, K=10)
+terms(m,10)
+
+r = lda.fit(dtmr, K=10)
+terms(r,10)
+
+
+install.packages("devtools")
+devtools::install_github("cpsievert/LDAvis")
+library(LDAvis)
+
+json_modi=ldavis_json(m,dtmm)
+serVis(json_modi)
+
+
+json_rahul=ldavis_json(r,dtmr)
+serVis(json_rahul)
+
+
+install.packages("rmarkdown")
